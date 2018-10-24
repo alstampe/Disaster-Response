@@ -1,2 +1,2 @@
 # Disaster-Response
-#Project for cerating av pipeline 
+#Project for creating a pipeline 
