@@ -22,3 +22,9 @@ Project outline, as given in project description
 
 Completed steps 1-7 in ETL Pipeline preparation in Notebook
 Dataframe loaded into sql Database 
+
+New status:
+Completed most steps in Part 2; building the pipeline
+The data was read from SQLlite, and I stored the final model in a Pickle file.
+Have some challenges sorting out the correct labels when predicting
+Will start testing on different parameters 
