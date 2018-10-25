@@ -19,3 +19,6 @@ Project outline, as given in project description
 |- classifier.pkl  # saved model 
 
 - README.md
+
+Completed steps 1-7 in ETL Pipeline preparation in Notebook
+Dataframe loaded into sql Database 
