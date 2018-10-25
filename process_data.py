@@ -37,7 +37,8 @@ def clean_data(df, categories):
     df = pd.merge(df, expanded, right_index=True, left_on='id')
     df = df.drop(['categories'], axis=1)
     df.drop_duplicates(inplace=True)
-    pass
+    return df
+    
 
 
 def save_data(df, database_filename):
@@ -74,7 +75,6 @@ def main():
               'to as the third argument. \n\nExample: python process_data.py '\
               'disaster_messages.csv disaster_categories.csv '\
               'DisasterResponse.db')
-#tester kode        
 
 
 if __name__ == '__main__':
