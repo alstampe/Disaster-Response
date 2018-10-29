@@ -12,6 +12,7 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sqlalchemy import create_engine
+import sqlite3
 
 
 def load_data(messages_filepath, categories_filepath):   
@@ -21,7 +22,6 @@ def load_data(messages_filepath, categories_filepath):
     df = pd.merge(messages, categories, how='outer')
     return messages, categories, df
     pass
-
 
 def clean_data(df, categories):
     expanded = categories['categories'].str.split(';' , expand=True)
@@ -34,17 +34,24 @@ def clean_data(df, categories):
     names=names.split(',')
     expanded.columns = names
     expanded.replace(regex=True,inplace=True,to_replace=r'\D',value=r'')
+    category = list(expanded.columns)
+    for column_name in category:
+        expanded[[column_name]] = expanded[[column_name]].apply(pd.to_numeric)
+    expanded.drop('child_alone', axis = 1, inplace = True)    
     df = pd.merge(df, expanded, right_index=True, left_on='id')
+    df = df[df['related'] != 2]
     df = df.drop(['categories'], axis=1)
     df.drop_duplicates(inplace=True)
     return df
-    
+
 
 
 def save_data(df, database_filename):
-    engine = create_engine('sqlite:///Database.db')
+   # conn = sqlite3.connect('DisasterResponse.db')
+   # df.to_sql(database_filename, engine, if_exists='replace', index=False)
+   # df.to_sql('database_filename', con = conn, if_exists='replace', index=False)
+    engine = create_engine('sqlite:///DisasterResponse.db')
     df.to_sql(database_filename, engine, if_exists='replace', index=False)
-    
     pass  
 
 
@@ -54,7 +61,7 @@ def main():
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
        # messages_filepath = disaster.messages.csv
        # categories_filepath = disaster_categories.csv
-       # database_filepath = 'Data4' 
+       # database_filename = 'Data' 
 
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
               .format(messages_filepath, categories_filepath))
