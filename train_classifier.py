@@ -1,7 +1,8 @@
+# IMPORT statements for Train_Classifier
+
 import sys
 import nltk
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
-
 import re
 import numpy as np
 import pandas as pd
@@ -15,48 +16,46 @@ from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sqlalchemy import create_engine
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
 from sqlalchemy import create_engine
 import pickle
 import sqlite3
 from sklearn.metrics import classification_report, accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, make_scorer
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.svm import LinearSVC
+from sklearn.externals import joblib
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.svm import LinearSVC
 from sklearn.externals import joblib
 
-def load_data():
-    engine = create_engine('qlite:///../data/DisasterResponse.db')
+# Functions; load_data, tokenize, build_model, get_eval_metrics, evaluate_model, evaluate_model2, save_model 
+
+def load_data(database_file):
+    '''
+    Function loads data from database file
+    Input : database_file (filename)
+    df is kept in its original in 'df' 
+    X and y are extracted as subsets; 
+    X contains messages and y contains values from category columns only   
+    Output : df, X, y and category_names
+    
+    '''
+    engine = create_engine('sqlite:///../data/DisasterResponse.db')
     conn = engine.connect()
     df = pd.read_sql("SELECT * FROM Data", con=conn)
     X = df['message']
     y = df.drop(['id', 'message', 'original', 'genre'], axis = 1)
-    category_names = list(df.columns)
+    category_names = list(y.columns)
     return df, X, y, category_names
 
-#def load_data(database_filepath):
-#    #engine = create_engine('sqlite:///DisasterResponse.db')
-#    engine = create_engine('sqlite:///../data/DisasterResponse.db')
-#    conn = engine.connect()
-#    df = pd.read_sql("SELECT * FROM Data", con=conn)
-#    X = df.message.values
-#    y = df[df.columns[4:]].values
-#    df = df.drop(['id', 'message', 'original', 'genre', 'related', 'child_alone'], axis=1)
-    #category_names = list(df.columns[4:])
-#    category_names = list(df.columns)
-    
-#    return X, y, category_names
-#    pass
-
-
 def tokenize(text):
-    
+    '''
+    Function performs tokenization on text strings
+    Input : text (text strings from messages)
+    Output : processed text    (tokenized and lemmatized)
+    '''
+    text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
     clean_tokens = []
@@ -68,6 +67,12 @@ def tokenize(text):
 
 
 def build_model():
+    '''
+    Function builds model and pipeline , using GridSearch and a parameter set for testing
+    RandomForestClassifier is used for classification
+    Input : None
+    Output : cv (model, a GridSearch produced object)
+    '''
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
@@ -79,31 +84,27 @@ def build_model():
               'clf__estimator__n_estimators':[10, 25], 
               'clf__estimator__min_samples_split':[2, 5, 10]}
     
-  #  parameters = {
-  #      'vect__ngram_range': ((1, 1), (1, 2)),
-  #      'clf__estimator__min_samples_split': [2, 4],
-  #      'vect__max_df': (0.5, 0.75, 1.0)
-  #  }
     cv = GridSearchCV(pipeline, param_grid=parameters, verbose = 2)
     return cv
 
 
 
 def get_eval_metrics(actual, predicted, col_names):
-    """Calculate evaluation metrics for ML model
+    """
+    Function calculates an evaluation metrics for the model
     
-    Args:
-    actual: array. Array containing actual labels.
-    predicted: array. Array containing predicted labels.
-    col_names: list of strings. List containing names for each of the predicted fields.
+    Input:    actual: array. Array containing actual label.
+              predicted: array. Array containing predicted labels
+              col_names: list of strings, names names for each of the predicted fields, called categories
        
-    Returns:
-    metrics_df: dataframe. Dataframe containing the accuracy, precision, recall 
-    and f1 score for a given set of actual and predicted labels.
+    Output:   metrics_df: dataframe containing the accuracy, precision, recall 
+              and f1 score for a given set of actual and predicted labels
+              
+    This evaluation metrics setup is written based on a GitHub project by Genevieve Hayes/gkhayes
+    The use of the metrics setup (below) is also based on her project.
     """
     metrics = []
     
-    # Calculate evaluation metrics for each set of labels
     for i in range(len(col_names)):
         accuracy = accuracy_score(actual[:, i], predicted[:, i])
         precision = precision_score(actual[:, i], predicted[:, i])
@@ -112,7 +113,6 @@ def get_eval_metrics(actual, predicted, col_names):
         
         metrics.append([accuracy, precision, recall, f1])
     
-    # Create dataframe containing metrics
     metrics = np.array(metrics)
     metrics_df = pd.DataFrame(data = metrics, index = col_names, columns = ['Accuracy', 'Precision', 'Recall', 'F1'])
       
@@ -121,18 +121,16 @@ def get_eval_metrics(actual, predicted, col_names):
 
 def evaluate_model(model, X_test, y_test, category_names):
 
-    """Returns test accuracy, precision, recall and F1 score for fitted model 
-    Args:
-    model: model object. Fitted model object.
-    X_test: dataframe. Dataframe containing test features dataset.
-    Y_test: dataframe. Dataframe containing test labels dataset.
-    category_names: list of strings. List containing category names.  
-    Returns:
-    None
     """
-    # Predict labels for test dataset
+    Calculates test accuracy, precision, recall and F1 score for the fitted model 
+   Input:   model: fitted model object from buil_model and train_model
+            X_test: dataframe, containing test dataset
+            y_test: dataframe, containing the test labels 
+    category_names: list containing all category names.  
+    Prints results in program
+    Returns: None
+    """
     y_pred = model.predict(X_test)   
-    # Calculate and print evaluation metrics
     eval_metrics = get_eval_metrics(np.array(y_test), y_pred, category_names)
     print(eval_metrics)
 
@@ -141,6 +139,9 @@ def evaluate_model_2(model, X_test, y_test, category_names):
     """
     Evaluates the trained model by predicting on test data
     The classification report prints output accuracy, precision and recall for all categories
+    This function delivers the same as the above, but in different output formats.
+    I struggled to debug this function and therefore wrote the aabove based on a GitHub project,
+    but finally managed to get this right and decided to keep both. 
     """
     y_pred = model.predict(X_test)
     y_test_df= pd.DataFrame(data=y_test)
@@ -152,13 +153,14 @@ def evaluate_model_2(model, X_test, y_test, category_names):
 
 
 def save_model(model, model_filepath):
-    # open the file for writing
-     # this writes the object a to the file named 'model'
-     # here we close the fileObject    
-    #file_Name = 'model_filepath'   
-    #fileObject = open(file_Name,'wb')    
-    #pickle.dump(model,fileObject)    
-    #fileObject.close()
+    '''
+    Function will save the model for use in the app
+    Note that it contains two save codes; one using pickle and one using joblib
+    I kept both after testing to have a backup, as the train/fit process takes a very long time to rerun ..
+    The joblib version will always be saved as classifier.pkl , I usually use 'Classifier.pkl for the pickle version)
+    Input: model, model_filepart (filename)
+    Output:None
+    '''
     pickle.dump(model, open(model_filepath, "wb")) 
     print('pickle model saved in:', model_filepath)
     joblib.dump(model, 'classifier.pkl')
@@ -169,8 +171,9 @@ def save_model(model, model_filepath):
 def main():
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
+        
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
-        X, y, category_names = load_data(database_filepath)
+        df, X, y, category_names = load_data(database_filepath)
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
         
         print('Building model...')
@@ -178,6 +181,12 @@ def main():
         
         print('Training model...')
         model.fit(X_train, y_train)
+        
+        print('Saving model...\n    MODEL: {}'.format(model_filepath))
+        save_model(model, model_filepath)
+
+        print('Trained model saved first time!')
+        
         
         print('Evaluating model...')
         evaluate_model(model, X_test, y_test, category_names)
@@ -189,7 +198,7 @@ def main():
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)
 
-        print('Trained model saved!')
+        print('Trained model saved again!')
 
     else:
         print('Please provide the filepath of the disaster messages database '\
