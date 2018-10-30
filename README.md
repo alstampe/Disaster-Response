@@ -38,11 +38,13 @@ python code : process_data.py, train_classifier.py, run.py
 
 data : disaster_categories.csv, disaster_messages.csv, DisasterDatabase.db/Data and Classifier.pkl
 
-app :
+app : as provided
+
+the files are both in root directory and sorted in folders as they were in the Udacity workspace
   
 
 # How to run the program
-1. Prepare data : Run : python process_data.py disaster_categories.csv disaster_messages.csv Data
+1. Prepare data : Run : python process_data.py disaster_categories.csv disaster_messages.csv DisasterResponse.db
    The code will expect the csv files to be in the same directory 
 2) Build, train and save classifier (expected to be in the same directory): python train_classifier.py Data Classifier
    The load function specifies the path to the data folder from the workspace, can easily be altered 
