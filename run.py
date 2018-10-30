@@ -2,10 +2,8 @@ import json
 import plotly
 import pandas as pd
 import numpy as np
-
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
-
 from flask import Flask
 from flask import render_template, request
 from plotly.graph_objs import Bar, Pie
@@ -16,6 +14,11 @@ from sqlalchemy import create_engine
 app = Flask(__name__)
 
 def tokenize(text):
+    '''
+    Function performs tokenization, the same way as in the train_classifier.py code
+    Input : text
+    Output : clean tokens 
+    '''
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -38,6 +41,15 @@ model = joblib.load("../models/Classifier.pkl")
 @app.route('/')
 @app.route('/index')
 def index():
+    '''
+    Code specifies visualizations for the app
+    In addition to the provided frist plot of genres there are
+    - plot of all categories, in order of dataset given
+    -plot of the 15 categories with the most occorences, sorted by value
+    -pie chart of genres
+    -pie chart of all categories
+    
+    '''
 
     # extract data needed for visuals
     genre_counts = df.groupby('genre').count()['message']
