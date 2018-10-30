@@ -42,9 +42,11 @@ app :
   
 
 # How to run the program
-1. Prepare data : Run (in the data folder): python process_data.py disaster_categories.csv disaster_messages.csv Data
-2) Build, train and save classifier (in the models folder): python train_classifier.py Data Classifier
-3) Use the app for classifying texts (in the app folder): python run.py
+1. Prepare data : Run : python process_data.py disaster_categories.csv disaster_messages.csv Data
+   The code will expect the csv files to be in the same directory 
+2) Build, train and save classifier (expected to be in the same directory): python train_classifier.py Data Classifier
+   The load function specifies the path to the data folder from the workspace, can easily be altered 
+3) Use the app for classifying texts (expected to be in an app folder): python run.py
    Open the app in a browser : https://view6914b2f4-3001.udacity-student-workspaces.com/
    In addition to the one visualisation included in the given material, I have added 4 more figures
    Test by entering random text strings and confirm classification by revirewing the result in the app
