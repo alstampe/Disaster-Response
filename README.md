@@ -1,5 +1,12 @@
-# Disaster-Response
-#Project for creating a pipeline 
+# Disaster-Response app 
+Project using ML for predicting correct category disaster-related messages 
+Project is a part of a Udacity Nanodegree
+
+# Framework for project
+Project is performed using Udacity provided JupyterNotebook and workspace IDE
+Data input is provided by .csv files and we use prepared code structores with some precoded HTML 
+
+# Project outline 
 Project outline, as given in project description
 
 - app
@@ -20,11 +27,30 @@ Project outline, as given in project description
 
 - README.md
 
-Completed steps 1-7 in ETL Pipeline preparation in Notebook
-Dataframe loaded into sql Database 
+# App description
+The purpose of the porject is to code and train a classification model, based on Machine Learning algorithms.
+The app shall categorize a free-format sms text and choose the most relevant categpry among 36 predefine categories.
+The texts will also be sorted in 3 genres. 
+Visuals is provided in the app to show information on the messages contained in the dataset.
 
-New status:
-Completed most steps in Part 2; building the pipeline
-The data was read from SQLlite, and I stored the final model in a Pickle file.
-Have some challenges sorting out the correct labels when predicting
-Will start testing on different parameters 
+#Files
+process_data.py
+train_classifier.py
+run.py
+data/
+  disaster_categories.csv
+  disaster_messages.csv
+  DisasterDatabase.db/Data
+models/  
+  Classifier.pkl
+app/
+  
+
+#How to run the program
+process_data.py disaster_categories.csv disaster_messages.csv Data
+train_classifier.py Data Classifier
+run.py
+
+
+#Comments
+In spite of repeated trainings with and without GridSearch and quite good accuracy on individual categories, the app does not perform well in predicting the best category. This is probably a result of a heavily skewed dataset, dominated by 'related' - and the fact that, in general, we have few occurences of 'hits' (positive values) for the majority of categories, making the classifier weak in recognizing the right category even when the text should be very clearly identifying cases like 'fire', 'storm', floods' etc.    
