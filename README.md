@@ -34,16 +34,11 @@ The texts will also be sorted in 3 genres.
 Visuals is provided in the app to show information on the messages contained in the dataset.
 
 # Files
-process_data.py
-train_classifier.py
-run.py
-data/
-  disaster_categories.csv
-  disaster_messages.csv
-  DisasterDatabase.db/Data
-models/  
-  Classifier.pkl
-app/
+python code : process_data.py, train_classifier.py, run.py
+
+data : disaster_categories.csv, disaster_messages.csv, DisasterDatabase.db/Data and Classifier.pkl
+
+app :
   
 
 # How to run the program
@@ -51,8 +46,8 @@ app/
 2) Build, train and save classifier (in the models folder): python train_classifier.py Data Classifier
 3) Use the app for classifying texts (in the app folder): python run.py
    Open the app in a browser : https://view6914b2f4-3001.udacity-student-workspaces.com/
-
-
+   In addition to the one visualisation included in the given material, I have added 4 more figures
+   Test by entering random text strings and confirm classification by revirewing the result in the app
 
 # Comments
 In spite of repeated trainings with and without GridSearch and quite good accuracy on individual categories, the app does not perform well in predicting the best category. This is probably a result of a heavily skewed dataset, dominated by 'related' - and the fact that, in general, we have few occurences of 'hits' (positive values) for the majority of categories, making the classifier weak in recognizing the right category even when the text should be very clearly identifying cases like 'fire', 'storm', floods' etc.    
